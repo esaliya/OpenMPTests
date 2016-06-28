@@ -17,6 +17,9 @@ int main (int argc, char *argv[]) {
 
   int numThreads, tid;
 
+  int tcount = 2;
+
+  if (tcount > 1){
   /* This creates a team of threads; each thread has own copy of variables  */
 #pragma omp parallel private(numThreads, tid)
  {
@@ -30,6 +33,7 @@ int main (int argc, char *argv[]) {
        printf("Number of threads is %d\n", numThreads);
      }
  }
+  }
  return 0;
 }
 
