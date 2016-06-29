@@ -71,15 +71,30 @@ int main(int argc, char *argv[]) {
 			if (sched_getaffinity(tid, sizeof(mask), &mask) == -1) {
 				printf("Error cannot do sched_getaffinity at rank %d and thread %d\n", world_proc_rank, thread_id);
 			}
+
+			char *bp;
+			size_t size;
+			FILE *stream;
+
+			stream = open_memstream(&bp, &size);
+			fprintf(stream, "Rank %d Thread %d, tid %d, affinity ", world_proc_rank, thread_id, tid);
+			fflush(stream);
+			/*printf("buf = `%s', size = %d\n", bp, size);
+			fprintf(stream, ", world");
+
+			printf("buf = `%s', size = %d\n", bp, size);*/
+
 			// Print it
 			int j;
 			for (j = 0; j < CPU_SETSIZE; ++j) {
 				if (CPU_ISSET(j, &mask)) {
-					printf("Rank %d Thread %d, tid %d, affinity %d\n",
-							world_proc_rank, thread_id, tid, j);
+					/*printf("Rank %d Thread %d, tid %d, affinity %d\n",
+							world_proc_rank, thread_id, tid, j);*/
+					fprintf(stream, "%d ", j);
 				}
-
 			}
+			fclose(stream);
+			printf("%s\n", bp);
 		}
 	}
 
