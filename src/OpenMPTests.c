@@ -7,14 +7,15 @@
  Description : Hello OpenMP World in C
  ============================================================================
  */
+#define _GNU_SOURCE
+
 #include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include <sys/syscall.h>
+#include <limits.h>
 #include <sched.h>
-#include <cstdio>
 /**
  * Hello OpenMP World prints the number of threads and the current thread id
  */
@@ -35,11 +36,20 @@ int main(int argc, char *argv[]) {
 			// We need the thread pid (even if we are in openmp)
 			pid_t tid = (pid_t) syscall(SYS_gettid);
 			// Get the affinity
-			if( sched_getaffinity(tid, sizeof(mask), (cpu_set_t*)&mask) == -1){
+			if( sched_getaffinity(tid, sizeof(mask), &mask) == -1){
 				printf("Error cannot do sched_getaffinityn");
 			}
 			// Print it
-			printf("Thread %d, tid %d, affinity %lun", omp_get_thread_num(), tid, (size_t)mask);
+			int j;
+        	for (j = 0; j < CPU_SETSIZE; ++j)
+    	    {
+	            if (CPU_ISSET(j, &mask))
+            	{
+        	        printf("Thread %d, tid %d, affinity %d\n", omp_get_thread_num(), tid, j);
+    	        }
+	
+    	    }
+	        printf("\n");
 
 			tid = omp_get_thread_num();
 			printf("Hello World from thread number %d\n", tid);
