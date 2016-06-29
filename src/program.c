@@ -29,6 +29,7 @@ int world_proc_rank;
 int world_procs_count;
 
 int num_threads;
+int bind_threads;
 
 int main(int argc, char *argv[]) {
 
@@ -50,12 +51,16 @@ int main(int argc, char *argv[]) {
 		{
 			int thread_id = omp_get_thread_num();
 			cpu_set_t mask;
-			CPU_ZERO(&mask); // clear mask
-			set_bit_mask(world_proc_rank, thread_id, num_threads, &mask);
-			ret = sched_setaffinity(0, sizeof(mask), &mask);
-			if (ret < 0)
-			{
-				printf("Error in setting thread affinity at rank %d and thread %d\n", world_proc_rank, thread_id);
+
+			if (bind_threads){
+				CPU_ZERO(&mask); // clear mask
+				set_bit_mask(world_proc_rank, thread_id, num_threads, &mask);
+				ret = sched_setaffinity(0, sizeof(mask), &mask);
+				if (ret < 0) {
+					printf(
+							"Error in setting thread affinity at rank %d and thread %d\n",
+							world_proc_rank, thread_id);
+				}
 			}
 
 			/* Print affinity */
@@ -106,13 +111,16 @@ int parse_args(int argc, char **argv) {
 	int c;
 
 	opterr = 0;
-	while ((c = getopt(argc, argv, "T:")) != -1)
+	while ((c = getopt(argc, argv, "T:b:")) != -1)
 		switch (c) {
 		case 'T':
 			num_threads = atoi(optarg);
 			break;
+		case 'b':
+			bind_threads = atoi(optarg);
+			break;
 		case '?':
-			if (optopt == 'T')
+			if (optopt == 'T' || optopt == 'b')
 				fprintf(stderr, "Option -%c requires an argument.\n", optopt);
 			else if (isprint(optopt))
 				fprintf(stderr, "Unknown option `-%c'.\n", optopt);
