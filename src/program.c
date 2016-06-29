@@ -22,14 +22,13 @@
 #include <stdarg.h>
 #include <unistd.h>
 
-void set_bit_mask(int rank, int thread_id, int tpp, int nodes, cpu_set_t *mask);
+void set_bit_mask(int rank, int thread_id, int tpp, cpu_set_t *mask);
 int parse_args(int argc, char **argv);
 
 int world_proc_rank;
 int world_procs_count;
 
 int num_threads;
-int num_nodes;
 
 int main(int argc, char *argv[]) {
 
@@ -52,7 +51,7 @@ int main(int argc, char *argv[]) {
 			int thread_id = omp_get_thread_num();
 			cpu_set_t mask;
 			CPU_ZERO(&mask); // clear mask
-			set_bit_mask(world_proc_rank, thread_id, num_threads, num_nodes, &mask);
+			set_bit_mask(world_proc_rank, thread_id, num_threads, &mask);
 			ret = sched_setaffinity(0, sizeof(mask), &mask);
 			if (ret < 0)
 			{
@@ -83,7 +82,7 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
-void set_bit_mask(int rank, int thread_id, int tpp, int nodes, cpu_set_t *mask) {
+void set_bit_mask(int rank, int thread_id, int tpp, cpu_set_t *mask) {
 	/* Hard coded values for Juliet*/
 	int cps = 12; // cores per socket
 	int spn = 2; // sockets per node
@@ -107,16 +106,13 @@ int parse_args(int argc, char **argv) {
 	int c;
 
 	opterr = 0;
-	while ((c = getopt(argc, argv, "T:N:")) != -1)
+	while ((c = getopt(argc, argv, "T:")) != -1)
 		switch (c) {
 		case 'T':
 			num_threads = atoi(optarg);
 			break;
-		case 'N':
-			num_nodes = atoi(optarg);
-			break;
 		case '?':
-			if (optopt == 'T' || optopt == 'N')
+			if (optopt == 'T')
 				fprintf(stderr, "Option -%c requires an argument.\n", optopt);
 			else if (isprint(optopt))
 				fprintf(stderr, "Unknown option `-%c'.\n", optopt);
