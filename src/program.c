@@ -79,10 +79,6 @@ int main(int argc, char *argv[]) {
 			stream = open_memstream(&bp, &size);
 			fprintf(stream, "Rank %d Thread %d, tid %d, affinity ", world_proc_rank, thread_id, tid);
 			fflush(stream);
-			/*printf("buf = `%s', size = %d\n", bp, size);
-			fprintf(stream, ", world");
-
-			printf("buf = `%s', size = %d\n", bp, size);*/
 
 			// Print it
 			int j;
