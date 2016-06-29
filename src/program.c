@@ -107,7 +107,7 @@ int parse_args(int argc, char **argv) {
 	int c;
 
 	opterr = 0;
-	while ((c = getopt(argc, argv, "T:n:")) != -1)
+	while ((c = getopt(argc, argv, "T:N:")) != -1)
 		switch (c) {
 		case 'T':
 			num_threads = atoi(optarg);
