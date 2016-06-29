@@ -16,10 +16,13 @@
 #include <sys/syscall.h>
 #include <limits.h>
 #include <sched.h>
-/**
- * Hello OpenMP World prints the number of threads and the current thread id
- */
+#include <mpi.h>
+
 int main(int argc, char *argv[]) {
+
+	MPI_Init(&argc, &argv);
+	MPI_Comm_rank(MPI_COMM_WORLD, &world_proc_rank);
+	MPI_Comm_size(MPI_COMM_WORLD, &world_procs_count);
 
 	int numThreads, tid;
 
@@ -36,20 +39,19 @@ int main(int argc, char *argv[]) {
 			// We need the thread pid (even if we are in openmp)
 			pid_t tid = (pid_t) syscall(SYS_gettid);
 			// Get the affinity
-			if( sched_getaffinity(tid, sizeof(mask), &mask) == -1){
+			if (sched_getaffinity(tid, sizeof(mask), &mask) == -1) {
 				printf("Error cannot do sched_getaffinityn");
 			}
 			// Print it
 			int j;
-        	for (j = 0; j < CPU_SETSIZE; ++j)
-    	    {
-	            if (CPU_ISSET(j, &mask))
-            	{
-        	        printf("Thread %d, tid %d, affinity %d\n", omp_get_thread_num(), tid, j);
-    	        }
-	
-    	    }
-	        printf("\n");
+			for (j = 0; j < CPU_SETSIZE; ++j) {
+				if (CPU_ISSET(j, &mask)) {
+					printf("Thread %d, tid %d, affinity %d\n",
+							omp_get_thread_num(), tid, j);
+				}
+
+			}
+			printf("\n");
 
 			tid = omp_get_thread_num();
 			printf("Hello World from thread number %d\n", tid);
